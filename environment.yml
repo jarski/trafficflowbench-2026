@@ -1,0 +1,15 @@
+# Exact environment used for every submission (conda-forge, Python 3.12).
+#   conda env create -f environment.yml && conda activate tfb && pip install -e .
+name: tfb
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12.14
+  - numpy=2.5.3
+  - pandas=2.3.3        # below 3: the organizer scripts need pandas 2
+  - pyarrow=25.0.0
+  - scipy=1.18.1
+  - scikit-learn=1.9.1
+  - lightgbm=4.7.0
+  - pytorch=2.14.1      # conda-forge build (MPS backend on macOS): the Task 1 U-Net (tfb.t1_unet) trains on the GPU when there is one, else the CPU
+  - pip

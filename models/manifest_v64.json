@@ -1,0 +1,45 @@
+{
+  "git": "e89d9c4",
+  "python": "3.12.14",
+  "platform": "macOS-15.5-arm64-arm-64bit",
+  "rebuilt_tasks": [
+    "1",
+    "2",
+    "4"
+  ],
+  "copied_from": null,
+  "task4": {
+    "start": "prior",
+    "method": "nnls",
+    "scale": "none",
+    "lam": 0.05
+  },
+  "t1_cells_per_panel": 600000,
+  "t1_pseudo": {
+    "rate": 0.15,
+    "n": 300000
+  },
+  "t2_seeds": {
+    "onset": 5,
+    "ongoing": 10
+  },
+  "t2_public_weight": 0.35,
+  "t2_cnn_weight": 0.0,
+  "t1_public_weight": 0.25,
+  "t1_unet_weight": 0.5,
+  "t1_unet_device": "mps",
+  "t1_unet_seeds": [
+    5,
+    6
+  ],
+  "t1_unet_loaded_from": null,
+  "runtime_min": 246.7,
+  "packages": {
+    "numpy": "2.5.3",
+    "pandas": "2.3.3",
+    "pyarrow": "25.0.0",
+    "scipy": "1.18.1",
+    "lightgbm": "4.7.0",
+    "torch": "2.14.1"
+  }
+}

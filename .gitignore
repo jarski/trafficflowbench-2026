@@ -1,0 +1,26 @@
+# Upstream reference clone (pinned commit recorded in REPRODUCE.md), not our code
+organizer-repo/
+
+# Data and generated artifacts live in ~/data/tfb, but guard against strays
+data/
+*.parquet
+*.npy
+*.npz
+*.zip
+*.csv.gz
+submissions/
+reports/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# macOS
+.DS_Store
+report/REPORT.html
+
+# Final-package build output and local Claude Code state
+dist/
+.claude/
