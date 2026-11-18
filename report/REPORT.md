@@ -1,6 +1,6 @@
 # TrafficFlowBench 2026: robust reconstruction and forecasting under a month shift
 
-**Team:** jarski, a one-person team (Jarno Rantala) · **Competition:** 2026 IEEE Big Data Cup – TrafficFlowBench · **Report of 2026-11-09**
+**Team:** jarski, a one-person team (Jarno Rantala) · **Competition:** 2026 IEEE Big Data Cup – TrafficFlowBench · **Report of 2026-11-09, revised 2026-11-18** (Section 7.1, comparison with other teams)
 
 **Selected final submission:** v64, public leaderboard 0.87721, produced by `python -m tfb.pipeline_final --out final --fresh` at git commit `e89d9c4`. **Private leaderboard: 0.86769.** The second selected submission, v52 (public 0.87643, private 0.86647), is the same configuration with the one leaderboard-tuned setting of Task 2 left at its untuned value (Section 5.3).
 
@@ -268,7 +268,7 @@ Public score of each new best (Figure 4); the change is against the previous bes
 
 ![Figure 4: public score of each new best](figures/fig_progress.png)
 
-**Where the score comes from** (validation, from the component probes of Section 2.5 and the paired deltas since): 0.35·S_state + 0.15·S_physics ≈ 0.44, S_queue ≈ 0.80 (0.753 at v3), S_ODME ≈ 0.993. Tasks 1, 3 and 4 are at their noise-limited ceilings; the gap to the top of the leaderboard is in Task 2.
+**Where the score comes from** (validation, from the component probes of Section 2.5 and the paired deltas since): 0.35·S_state + 0.15·S_physics ≈ 0.44, S_queue ≈ 0.80 (0.753 at v3), S_ODME ≈ 0.993. Tasks 1, 3 and 4 are close to their noise-limited ceilings; most of the gap to the best compliant solutions is in Task 2 (Section 7.1).
 
 ### 7.1 What held up on the private month
 
@@ -327,7 +327,11 @@ Kaggle shows the private score of every submission once the competition ends, so
 - **Ongoing: the large mechanistic changes held, the model-family choices did not.** The dynamics features, dropping the recurrence features, the estimate of links masked at T, no far links and the separately set blend weights all kept their sign. The public all-link average fell from +0.0027 to +0.0003, the notebook's rows turned negative, and every CNN variant turned positive, the dynamics-only one most (+0.0031). Dropping the time, weekday, position and panel features, rejected on March (−0.0004), gained +0.0012 on April: one more sign that April rewarded less memory of the training months.
 - **Onset: the public verdicts were noise, or worse.** 1 of 7 clear verdicts kept its sign (correlation −0.65). The 5-seed average lost 0.0027 twice, and the three month-adaptation changes that lost 0.004–0.008 on March gained 0.001–0.004 on April.
 - **What it cost.** Along the chain, Task 2 gained +0.0129 on March and +0.0027 on April. The public-to-private gap of my submissions opened accordingly: v1 scored 0.0009 higher on April than on March, v64 0.0095 lower, and the difference is Task 2 tuning that did not transfer. The best April score among all 64 versions is v62 at 0.86840, 0.0007 above the selected v64; with a 1-seed onset and the dynamics-only CNN, both rejected on March, the final would have scored roughly 0.873 on April. The hedge v52 differed from v64 only in blend weights, which the private month ranked the same way; a hedge that differed in a model family would have been worth more.
-- **Reading across teams.** The two write-ups posted after the deadline that I have seen report the same pattern: Task 1 gains carried over almost exactly, Task 2 gains often flipped sign, and removing training-month memory from the queue models helped on both months. Scores above 0.90 on the private leaderboard belong to submissions made before the 11 September rebuild, which the organizers have ruled void; compliant teams that have published their numbers sit around 0.86–0.87, as this submission does.
+- **Reading across teams.** Scores above 0.90 on the private leaderboard include submissions made before the 11 September rebuild, which the organizers have ruled void (thread 756746). Compliant solutions published since the deadline score between 0.860 and 0.899 on private, and this submission's 0.868 is in the lower half of that range. Those write-ups report the same pattern as Section 7.1: Task 1 gains carried over almost exactly, Task 2 gains often flipped sign, and removing training-month memory from the queue models helped.
+- **Where the stronger compliant solutions gained.** The 8th-place write-up (private 0.899) reports March component levels of S_state 0.947 and S_physics 0.754, about where mine are, but onset IoU 0.832 and ongoing IoU 0.883, well above mine. Most of the gap is therefore in Task 2, and the write-ups point to what this solution missed there:
+    - **Training the ongoing model on the windows the official selector would pick.** My replica of the selector matched only 14 of 40 official ongoing windows, so I trained on a broad sample of windows that met the persistence condition (11,321) and used the replica only for evaluation. The 83rd-place team reached 36 of 40 by evaluating the persistence cap on a time-filled state; training on windows chosen that way gained +0.0047 on public for them, and a similar change gained +0.0034 on private for the 24th-place team (0.890).
+    - **Adapting to the scored month itself.** The 8th-place solution fine-tunes its ongoing models for each scored date on pseudo-windows built from earlier dates of the same month, using only data before the window's origin, and trains a per-month U-Net for Task 1 on the scored month's own released cells. My Task 2 models are fitted on the training split only.
+    - In Task 1, the 24th-place team gained +0.005 on private by replacing temporal convolutions with a bidirectional GRU along time.
 
 ## 8. Reproducibility and declarations
 
