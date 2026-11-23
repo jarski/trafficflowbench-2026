@@ -9,7 +9,9 @@ Code of **jarski**, a one-person team (Jarno Rantala), for the 2026 IEEE Big Dat
 | Entry script | `python -m tfb.pipeline_final --out final --fresh` |
 | Runtime | about 2 hours on an Apple M4 Pro (14 CPU cores, 20-core GPU, 48 GB RAM) |
 | Hardware | 16 GB RAM, and about 20 GB of free disk besides the 12 GB release. Everything runs on the CPU except the Task 1 U-Net, which trains on a GPU when PyTorch finds one (Apple MPS or CUDA). Without a GPU its training adds about 9 hours, or the shipped models can be loaded instead (below). Tested on macOS 15 on Apple silicon. |
+| Final ranking | 33rd of the 69 teams with a final package (gold 0.928, bronze 0.902) |
 | Report | `report/REPORT.pdf` |
+| After the deadline | Five late submissions tested open questions: report Section 7.2, code in `experiments/late/` |
 | Kaggle write-up | https://www.kaggle.com/competitions/2026-ieee-big-data-traffic-flow-bench/writeups/jarski-private-0-868-code-report-and-what-hel |
 
 ## Reproduce
@@ -61,8 +63,8 @@ python -m tfb.t2_bench causality --files --submission final
 - **Use of AI:** I developed the solution with Claude Code (Anthropic), an AI coding assistant, which wrote most of the code under my direction. The pipeline contains no language model.
 - **License:** MIT, see `LICENSE`. Third-party licenses are listed in `REPRODUCE.md`.
 
-The submitted v64 was produced at git commit `e89d9c4`. Since then only comments, documentation, the report and `models/` have changed. The archive's own commit is recorded in the zip file's comment.
+The submitted v64 was produced at git commit `e89d9c4`. Since then only comments, documentation, the report and `models/` have changed, and the late diagnostics in `experiments/late/` were added; none of this touches the pipeline. The archive's own commit is recorded in the zip file's comment.
 
 ## About this public copy
 
-This repository is a snapshot of my private development repository at commit df79a6d (2026-11-10), squashed into one commit. Commit ids cited in the report and in REPRODUCE.md refer to that private repository: e89d9c4 produced the submitted v64, and 1243da7 is the package sent to the organizers. The code here is identical to that package. Copies of the competition pages and forum threads are not republished; `docs/README.md` links to them and summarizes the rulings relied on.
+This repository is a snapshot of my private development repository at commit df79a6d (2026-11-10), squashed into one commit. Commit ids cited in the report and in REPRODUCE.md refer to that private repository: e89d9c4 produced the submitted v64, and 1243da7 is the package sent to the organizers. The pipeline code here is identical to that package. Later commits correct the report (2026-11-18 and 2026-11-23) and add the late diagnostics in `experiments/late/`. Copies of the competition pages and forum threads are not republished; `docs/README.md` links to them and summarizes the rulings relied on.

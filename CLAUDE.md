@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Our solution for the Kaggle competition **2026 IEEE Big Data Cup – TrafficFlowBench** (https://www.kaggle.com/competitions/2026-ieee-big-data-traffic-flow-bench).
 
+**Status (2026-11-23): the competition is over.** Final rank 33 of the 69 teams with a final package (private 0.86769; gold 0.928, bronze 0.902). Five late submissions then tested open questions; the results are in `experiments/LOG.md` (2026-11-23) and in Section 7.2 of the report. Conclusions below that the private month or the late submissions disproved are marked where they stand.
+
 - **Read first:**
   - `docs/competition-notes.md`: prizes, deadlines, eligibility (our notes of 2026-09-29).
   - `README.md` is the final package's overview and quick start. `models/` holds the selected submission's two U-Net models and manifest.
@@ -79,6 +81,7 @@ The flow is: release → `tfb.dense` (dense arrays, links in **travel order**) �
   - **train profiles** leave each training day out of its own profile, which removed a training-time leak;
   - **month-adapted profiles** come from the scored month's own observed cells, same day type, with the target day left out. On the leaderboard they gained +0.0014, 7× the holdout estimate.
 - Predictions pass `plausible_speed`: speed ≥ 5 km/h and q/v ≤ k_jam.
+- **Blank spans (found 2026-11-23).** In the scored months the 90 minutes after every Task 2 origin are blank on every link, and 1.9% of the Task 1 targets lie inside these spans. The train split has none, so the training masks and the Dec–Feb holdout never contained one. The holdout therefore overstates S_state by 0.011 (0.948 against 0.937 on the leaderboard), and the spans cost 0.0057 of total score. `experiments/late/span_lib.py` emulates them; a span-aware U-Net gained +0.0022 on both months in a late submission.
 - **Averaged with a second model family** (`tfb.t1_public`): a public notebook's 94-feature set (CC0) retrained with LightGBM on synthetic masks of the train truth.
   - `pipeline_final.T1_PUBLIC_WEIGHT = 0.25` is its weight at target cells. Dec–Feb holdout +0.0009, positive on all 10 panels; alone it is 0.004 weaker.
 - **Averaged with a third family, a 2-D U-Net over each day's [slot × link] grid (`tfb.t1_unet`, PyTorch), at `t1_unet.WEIGHT = 0.5`:** public +0.0021 (v47; weight 0.33: +0.0018, v48), Dec–Feb holdout +0.0018 composite, positive on all 10 panels (LOG 2026-10-20/21). Alone it matches the production pair. It is the one Task 1 change whose holdout gain transferred in full.
@@ -96,8 +99,8 @@ The flow is: release → `tfb.dense` (dense arrays, links in **travel order**) �
 - **Labels:** observed speed ≤ 0.6 × free speed on eligible cells.
 - **Replica of the organizer window selector** (`t2_rules.selector_windows`):
   - a forward scan, 6 h spacing across both conditions, persistence IoU ≤ 0.9;
-  - it reproduces 39/40 official onset windows but only 14/40 ongoing ones;
-  - for ongoing, only the 40 official train windows show official difficulty.
+  - it reproduces 39/40 official onset windows but only 14/40 ongoing ones. **Corrected 2026-11-23:** the low match came from testing the cap on a state in which a missing reading counts as "no queue". With the cap tested on a time-filled state the replica matches 37/40 (`experiments/late/sel_replica.py`). `t2_rules` is unchanged, so that the pipeline stays reproducible;
+  - with the uncorrected replica, only the 40 official train windows show official difficulty for ongoing. Windows from the corrected replica are as hard as the official ones.
 - **Onset:**
   - The queue appears only at T+30. Rows are (event, link); the predicted set maximizes expected IoU (`choose_set`).
   - Production uses the v4 features with 5 seeds.
@@ -145,11 +148,11 @@ The flow is: release → `tfb.dense` (dense arrays, links in **travel order**) �
   - Task 2: onset v4 features with 5 seeds; ongoing A3b without recurrence features, plus the causal estimate of links masked at T, with 10 seeds, averaged with the public all-link model (weight 0.35 on our candidate cells, scale 0.45 off them);
   - Task 4: NNLS.
 - **Task 2 information set:** `t2_features.USE_T_SLOT = True` (≤ T, including the observation at T), allowed per thread 745700. Switching to < T would cost about −0.004 total on the bench.
-- **Onset is frozen** at the v4 features with 5 seeds. Every feature change lost 0.004–0.008 on validation (LOG 2026-10-08).
+- **Onset is frozen** at the v4 features with 5 seeds. Every feature change lost 0.004–0.008 on validation (LOG 2026-10-08). **Status 2026-11-23: this was a verdict of the public month's 40 windows, not a rule.** On the private month five of the seven alternatives scored higher. A late submission without any training-month feature read −0.0067 public and +0.0032 private, so removing the memory is no remedy either (LOG 2026-11-23).
 - **The scored months are shifted (LOG 2026-10-07).** Train months are near copies of each other (congestion-pattern correlation 0.955). Validation and private correlate only 0.84 with them.
   - Leave-one-month-out CV and the bench cannot see this shift. Changes built on train recurrence, train profiles or train priors helped the bench and lost on the leaderboard three times; removing such features gained.
-  - Judge any change that relies on train-month patterns on the public leaderboard; use the bench for shift-free mechanics only.
-  - For the ongoing family the train bench cannot rank model families at all (LOG 2026-10-20): the public local model loses on the bench and wins on validation, the CNN the reverse.
+  - The rule used during the competition was: judge any change that relies on train-month patterns on the public leaderboard, and use the bench for shift-free mechanics only. **The private month disproved it:** 1 of 6 onset verdicts and 9 of 15 ongoing verdicts of the public leaderboard kept their sign. What did predict both months in late submissions: a bench on windows chosen by the corrected selector replica, and a holdout that copies the blank spans of the scored months (LOG 2026-11-23).
+  - For the ongoing family the train bench cannot rank model families at all (LOG 2026-10-20): the public local model loses on the bench and wins on validation, the CNN the reverse. (On the private month the CNN gained in every variant, so for the CNN the bench was right and the public month wrong.)
   - Prefer current-dynamics features and adaptation to the scored month.
-  - On validation, Task 2 onset is limited by non-recurrent onsets, which no model predicts from data ≤ T (LOG 2026-10-02).
+  - A hypothesis of 2026-10-02 that was never confirmed: on validation, Task 2 onset is limited by non-recurrent onsets. We found no model that predicts them from data ≤ T. Other teams' onset scores are far higher (0.83 against our 0.77 on the public month), so better onset models exist.
   - The current plan is PLAN.md §0; results are in LOG 2026-10-06.

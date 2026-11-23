@@ -818,3 +818,80 @@ One entry per experiment or submission: date, what changed, local scores, leader
 - The 2026-11-08 entry above said compliant teams reported private scores around 0.860–0.873. Write-ups published since then show compliant private scores up to 0.899: 8th place 0.89874 (development stopped 2026-10-20, so post-rebuild), 24th 0.88992, 83rd 0.87590, against 0.86748 (130th), 0.86044 (212th) and this team's 0.86769.
 - The 8th-place write-up's March component levels (S_state 0.947, S_physics 0.754, onset IoU 0.832, ongoing IoU 0.883) put Tasks 1 and 3 about level with this solution and Task 2 well above it. The stronger solutions trained the ongoing model on selector-faithful windows (the 83rd-place replica matched 36 of 40 official ongoing windows by evaluating the persistence cap on a time-filled state; +0.0047 public for them, +0.0034 private for 24th place) and adapted Task 2 to the scored month per date (8th place).
 - Report revised (dated 2026-11-18): Section 7.1 "Reading across teams" reworded and a bullet on where the stronger compliant solutions gained added; Section 7 "the gap to the top of the leaderboard" now reads "most of the gap to the best compliant solutions is in Task 2". The PDF e-mailed on 2026-11-10 and the one attached to the Kaggle write-up keep the old sentence.
+
+## 2026-11-19 — Final results
+- The organizers announced the winners (thread 760311): Gold Ashkan Zare, Silver jkatdare, Bronze takaito, K-12 award CoReRazed.
+- Field: 1,802 entrants, 801 teams, 18,124 submissions; 126 teams registered for awards and 73 sent code and reports.
+- **Final ranking (thread 760505):** 69 teams with a registration and a final package, ranked by private score. Gold 0.92823, silver 0.92560, bronze 0.90196, 4th–11th 0.891–0.900; **jarski 33rd, 0.86769**. The organizers state that the winners' code and reports were reviewed against the Task 2 time rule, so the 0.92+ scores are compliant. The reading in the 2026-11-08 entry, that the 0.90+ scores are void leak entries, was wrong for these teams.
+
+## 2026-11-23 — Late submissions: four open questions tested
+After the final ranking, four open questions were tested with late submissions, which Kaggle still scores. Code is in `experiments/late/`. Every forecast below was written before its submission.
+
+**Probes (no modelling).**
+- `late_p1`: v64 with every Task 2 prediction zero. Its score is Tasks 1 + 3 + 4 of v64, exactly, on both months.
+  - Forecast: 0.6365–0.6385 public and private (from the v3 probes and the chain; the range is the unknown Task 1 share of v4).
+- `late_p2`: v64 with speed and flow of every target times 2. S_state becomes 0 through its clip (normalizers 25 km/h and 600 veh/h per lane). Density q/v, and with it S_LWR, does not change. S_FD falls by 0.2378 on both months (`experiments/late/fd_local.py`: 0.9880 → 0.7502 validation, 0.9879 → 0.7501 private; the blank non-target cells are left out, about 1.5% of the eligible cells). So S_state = (v64 − late_p2 − 0.05 × 0.2378) / 0.35, and Tasks 2 and 4 cancel.
+  - Forecast for S_state 0.948 (the holdout's level): 0.5335 public, 0.5240 private. Band for S_state 0.935–0.955: 0.5310–0.5380 public, 0.5215–0.5285 private.
+  - This rests on one assumption: the organizers' conservation right-hand side does not depend on the submitted flows (LOG 2026-09-30, the flux "projected onto the observations").
+- **Results of the two probes (2026-11-23 03:48 and 03:49 UTC; both inside their bands).**
+  - `late_p1` (58756888): 0.63735 public, 0.63694 private. So Tasks 1 + 3 + 4 of v64 are level on the two months, and Task 2 of v64 is 0.23986 public (0.7995) and 0.23075 private (0.7692). With onset at 0.11588 and 0.10431, ongoing is 0.12398 public (IoU 0.8266) and 0.12644 private (IoU 0.8430).
+  - `late_p2` (58756955): 0.53732 public, 0.52743 private. So **S_state of v64 is 0.9371 on the public month and 0.9382 on the private month**, against 0.948 on the Dec–Feb holdout. With Task 4 at 0.1986, S_physics is 0.738 public and 0.733 private (±0.002 for the Task 4 estimate), against 0.754 on the holdout; S_LWR is then about 0.61.
+  - The gap between holdout and leaderboard in Tasks 1 + 3 (0.4448 against 0.4388 and 0.4383) is therefore about 0.0038 from state and 0.0024–0.0031 from physics.
+  - A check of the blank-span hypothesis: 1.9% of the targets at a speed error of 9.6 km/h (plain interpolation across the span) instead of 1.6 km/h lower S_state by about 0.011. That is the measured difference. It does not prove the cause; the span experiment below tests it.
+
+**Onset without training-month memory.**
+- Train bench, leave one month out, 5 seeds (official / selector / all windows):
+  - production (v4 features): 0.9481 / 0.9070 / 0.9104;
+  - `late_nomem_s5`, without the priors, the clock and the position (`prior_tod`, `prior_all`, `qfreq_t0`, `prior_tod_up1`, `prior_tod_dn1`, `tod`, `weekday`, `pos`, `panel_code`): 0.8687 / 0.8485 / 0.8296;
+  - `late_dyn_s5`, also without the static link attributes: 0.7800 / 0.7684 / 0.7638.
+- For comparison, the production onset model scores 0.773 on the public month and 0.695 on the private month, far below its bench level. The bench cannot say what the no-memory model scores there.
+- Candidate `late_onset_nomem`: v64 with the onset model retrained without those nine features (5 seeds, `experiments/tools/t2_variant.py`). A control build with no feature dropped must reproduce v64's onset rows.
+  - Forecast: −0.005 public (band −0.013 to +0.003), +0.002 private (band −0.008 to +0.012). Reasons: on train-like months the change costs 0.06 IoU, which would be −0.009; the one comparable submission (v18, without `qfreq_t0` only) read −0.0039 public and +0.0012 private.
+  - What would count as a finding: the same change differs between the two months by 0.0058 (root mean square over our onset pairs), so only a private change beyond ±0.006, or both months moving the same way by more than 0.004, says something.
+  - The control build reproduced v64's queue rows exactly (0 of 174,000 differ). The variant changes 123 rows in 36 onset windows (18 per month); the other 22 onset windows per month are identical.
+  - **Result (58758560, 2026-11-23 04:27 UTC): 0.87049 public, 0.87093 private. Against v64: −0.0067 public, +0.0032 private.** Both inside the forecast bands.
+  - Onset IoU without the memory features: 0.728 public and 0.717 private, against 0.773 and 0.695 with them. So the memory features are worth +0.045 IoU in March and −0.022 in April, and without them the two months are level.
+  - Reading, by the criterion written above: the private gain is below 0.006 and the two months move in opposite directions, so this is not evidence that a model without memory is better. Over both months it is worse by 0.0035. The same pattern as v18 and v19, now with all memory removed.
+
+**Selection regularity in ongoing windows.** Scripts: `experiments/late/sel_*.py`.
+- Selector replica: with the cap tested on the time-interpolated state and the state at the origin repeated, it matches 37 of 40 official ongoing train windows exactly and 39 within five minutes (forward-filled as in `selector_check.py`: 34 and 37; logged state: 14 and 16). Onset stays 39 of 40. What kept the selector from taking T−5 in the 40 official windows: the cap in 22, the 6 h spacing in 9, no established queue yet in 7, borderline 2.
+- A flag computed from data ≤ T (T−5 was at least 6 h after the previous origin, had history coverage ≥ 0.7 and an established queue) finds all 22 cap-bound official train windows and flags 24; on 359 per-month replica windows precision is 180/182 and recall 180/180. Scored months: 23 of 40 validation and 20 of 40 private ongoing windows are flagged.
+- Window IoU out of fold (the window's month left out), 40 official / 359 replica windows:
+  - production: 0.8346 / 0.8378 (flagged windows 0.8819 / 0.8799);
+  - rule A, flagged windows with steps 1–5 set to the persistence state from data ≤ T: 0.8252 / 0.8390. Production already forecasts near-pure persistence in 22 of the 24 flagged official windows, and where it departs on large queues it is right. No decode-only rule beats production on the official windows;
+  - **candidate B, our LightGBM retrained on 11,678 selector-faithful train windows with the flag, a spacing flag and flag × step as features, inside the unchanged v64 blend: 0.8633 / 0.8646**, +0.0287 ± 0.0080 and +0.0268 ± 0.0035. Positive in all nine held-out months. Most of the gain is step 6 of flagged windows (0.64 → 0.82 for the new model alone). Without the three selection features the gain is +0.0160 / +0.0212, so the training windows carry most of it.
+  - Negative control: on 480 ordinary origins that the selector did not choose, the new model is worse than production (−0.0243 ± 0.0028). Production scores 0.889 on ordinary origins and 0.835–0.838 on selector-chosen ones.
+  - Controls of the evaluation: it reproduces LOG 2026-10-19 exactly (0.8452 / 0.7926 / 0.8239), the organizers' `score_window` agrees in 80 of 80 cases, and v64's probabilities rebuilt from its saved models reproduce v64's `queue.csv` in all 87,000 ongoing cells.
+- Causality: for all 80 scored ongoing windows both candidates are identical with every value after T blanked in the arrays, and with every row stamped after T removed from the release files (the award check). A three-slot shift is caught in 80 of 80 windows.
+- Disclosure: one ad-hoc look during this work printed, for five validation windows of D7_I210_E, the first readings after their blank spans (data stamped after T). They are used in no candidate and no forecast.
+- Warning signs for B: 44% of the replica gain comes from one panel (D7_I210_E), the gain is nil on the 38 replica windows of the least typical days, and the train bench has reversed sign for ongoing model changes before.
+- **Forecasts, written before submission** (change in total score against v64):
+  - `late_sel_a` (rule A; 481 rows in 10 + 11 windows): public −0.001 (−0.003 to +0.001), private +0.002 (−0.002 to +0.004).
+  - `late_sel_b` (candidate B; 314 rows in 30 + 30 windows): public +0.003 (−0.001 to +0.006), private +0.004 (0.000 to +0.008). At train rates it would be +0.004 on both.
+- **Result of `late_sel_b` (58760776, 2026-11-23 05:22 UTC): 0.87833 public, 0.87131 private. Against v64: +0.0011 public, +0.0036 private.** Both inside the forecast bands. Ongoing IoU rises from 0.8266 to 0.8341 on the public month and from 0.8430 to 0.8671 on the private month. The private score is above every one of the 64 versions submitted before the deadline (best: v62, 0.86840).
+
+**Blank spans in Task 1.** Scripts: `experiments/late/span_*.py`.
+- Emulation on the Dec–Feb holdout (models trained on Jun–Nov only): 239 windows from the corrected selector, spans T+5 to T+90 blank on all links, histories unmasked and not targets; 201,255 span targets, 1.92% of the targets.
+  - Speed RMSE inside the spans / outside: interpolation 9.85 / 2.79 km/h; our LightGBM 9.05; public-feature LightGBM 9.30; U-Net 9.45; **production blend 9.14 / 1.47**. The same cells when the spans are not blank: 1.90.
+  - Production blend: S_state 0.9478 without spans and **0.9371 with them** (per month 0.9372 / 0.9373 / 0.9368). The leaderboard has 0.9371 public and 0.9382 private. S_physics 0.7578 → 0.7445; the leaderboard has about 0.738 and 0.733, so the spans explain about half of the physics difference.
+  - **Cost of the spans: −0.0057 of total score** (S_state −0.0106, S_physics −0.0133).
+- Fixes on the emulated holdout, change of total against the blend: span cells from interpolation −0.0008; from the U-Net alone −0.0004; best existing blend +0.0002; month profile shifted to the day −0.0007; the production U-Net fine-tuned on days with synthetic all-link spans +0.0032 (1 seed); with extra inputs (the month's profile, ramp flows, the window condition), 2 seeds, +0.0036; the same adapted to the month by self-supervision **+0.0037** (speed RMSE inside the spans 9.14 → 4.94 km/h; positive in all 24 panel-months).
+- Transfer check on the scored months' own released observations with pseudo-spans: squared speed error against interpolation falls 73% on Dec–Feb, 69% on March and 63% on April.
+- **Forecasts, written before submission** (change in total score against v64; each candidate changes exactly the 128,465 span targets, 64,720 in validation and 63,745 in private):
+  - `late_span_interp` (span cells from plain interpolation; a diagnostic of what v64's models are worth there): −0.0008 on both months (−0.0012 to −0.0004).
+  - `late_span_fix` (span cells from the span-aware U-Net): +0.0035 public (+0.0022 to +0.0043), +0.0032 private (+0.0020 to +0.0041).
+- Not verified: the physics part of the gain on the leaderboard (its level is only half explained), and bit-identical retraining of the fix (trained on a shared GPU).
+- **Result of `late_span_fix` (58765522, 2026-11-23 07:06 UTC): 0.87949 public, 0.86993 private. Against v64: +0.0023 public, +0.0022 private.** Both inside the forecast bands, at their lower edge: the gain is about two thirds of the holdout's +0.0037, which fits the state part alone transferring and the physics part only partly.
+
+**Summary of the five late submissions of 2026-11-23** (all five landed inside the bands written before submission):
+
+| submission | what it tests | public | private | against v64 |
+|---|---|---|---|---|
+| `late_p1` | Tasks 1 + 3 + 4 of v64 | 0.63735 | 0.63694 | Task 2 of v64 = 0.2399 / 0.2308 |
+| `late_p2` | state against physics | 0.53732 | 0.52743 | S_state = 0.9371 / 0.9382 |
+| `late_onset_nomem` | onset without training-month memory | 0.87049 | 0.87093 | −0.0067 / +0.0032 |
+| `late_sel_b` | ongoing trained on selector-faithful windows | 0.87833 | 0.87131 | +0.0011 / +0.0036 |
+| `late_span_fix` | span-aware model for the blank spans | 0.87949 | 0.86993 | +0.0023 / +0.0022 |
+
+- The two changes that gained on both months touch disjoint rows, so together they give 0.8806 public and 0.8736 private (+0.0034 and +0.0059 over v64).
+- Not submitted yet: `late_span_interp` and `late_sel_a`, two diagnostics with forecasts above.
