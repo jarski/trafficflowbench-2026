@@ -1,6 +1,6 @@
 # Late diagnostics (after the deadline)
 
-Code for the late submissions of 2026-11-23: report Section 7.2, and `experiments/LOG.md`, entry of 2026-11-23. It is diagnostic code. It is not part of the pipeline that reproduces the selected submission, and it writes its data to `~/data/tfb/cache/late/` and to `~/data/tfb/submissions/late_*`.
+Code for the late submissions of 2026-11-23 and 2026-11-24: report Section 7.2, and `experiments/LOG.md`, entries of 2026-11-23 and 2026-11-24. It is diagnostic code. It is not part of the pipeline that reproduces the selected submission, and it writes its data to `~/data/tfb/cache/late/` and to `~/data/tfb/submissions/late_*`.
 
 | files | question |
 |---|---|

@@ -894,4 +894,9 @@ After the final ranking, four open questions were tested with late submissions, 
 | `late_span_fix` | span-aware model for the blank spans | 0.87949 | 0.86993 | +0.0023 / +0.0022 |
 
 - The two changes that gained on both months touch disjoint rows, so together they give 0.8806 public and 0.8736 private (+0.0034 and +0.0059 over v64).
-- Not submitted yet: `late_span_interp` and `late_sel_a`, two diagnostics with forecasts above.
+- `late_span_interp` and `late_sel_a`, two diagnostics with forecasts above, were submitted on 2026-11-24 (next entry).
+
+## 2026-11-24 — The two queued diagnostics
+- **`late_span_interp` (58801083, 00:04 UTC): 0.87677 public, 0.86718 private. Against v64: −0.0004 public, −0.0005 private.** Forecast −0.0008 (−0.0012 to −0.0004); both inside the band, at its upper edge. So inside the blank spans the three model families of v64 are worth 0.0004 to 0.0005 of total score over plain interpolation, about half of what the emulated holdout said (0.0008).
+- **`late_sel_a` (58801318, 00:06 UTC): 0.87582 public, 0.87038 private. Against v64: −0.0014 public, +0.0027 private.** Forecast −0.001 (−0.003 to +0.001) and +0.002 (−0.002 to +0.004); both inside. The split by month is the one forecast: on the public month the rule overrides the model only on large queues, where the model is right to depart from persistence; on the private month it also restores four small queues that v64 had cleared although the selection rule says they hold to T+25.
+- All seven late submissions landed inside the bands written before submission. The decode-only rule is mixed (it loses on one month and gains on the other); the model retrained on selector-faithful windows (`late_sel_b`) gains on both.

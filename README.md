@@ -11,7 +11,7 @@ Code of **jarski**, a one-person team (Jarno Rantala), for the 2026 IEEE Big Dat
 | Hardware | 16 GB RAM, and about 20 GB of free disk besides the 12 GB release. Everything runs on the CPU except the Task 1 U-Net, which trains on a GPU when PyTorch finds one (Apple MPS or CUDA). Without a GPU its training adds about 9 hours, or the shipped models can be loaded instead (below). Tested on macOS 15 on Apple silicon. |
 | Final ranking | 33rd of the 69 teams with a final package (gold 0.928, bronze 0.902) |
 | Report | `report/REPORT.pdf` |
-| After the deadline | Five late submissions tested open questions: report Section 7.2, code in `experiments/late/` |
+| After the deadline | Seven late submissions tested open questions: report Section 7.2, code in `experiments/late/` |
 | Kaggle write-up | https://www.kaggle.com/competitions/2026-ieee-big-data-traffic-flow-bench/writeups/jarski-private-0-868-code-report-and-what-hel |
 
 ## Reproduce

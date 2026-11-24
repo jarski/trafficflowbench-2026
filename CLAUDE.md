@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Our solution for the Kaggle competition **2026 IEEE Big Data Cup – TrafficFlowBench** (https://www.kaggle.com/competitions/2026-ieee-big-data-traffic-flow-bench).
 
-**Status (2026-11-23): the competition is over.** Final rank 33 of the 69 teams with a final package (private 0.86769; gold 0.928, bronze 0.902). Five late submissions then tested open questions; the results are in `experiments/LOG.md` (2026-11-23) and in Section 7.2 of the report. Conclusions below that the private month or the late submissions disproved are marked where they stand.
+**Status (2026-11-23): the competition is over.** Final rank 33 of the 69 teams with a final package (private 0.86769; gold 0.928, bronze 0.902). Seven late submissions then tested open questions; the results are in `experiments/LOG.md` (2026-11-23) and in Section 7.2 of the report. Conclusions below that the private month or the late submissions disproved are marked where they stand.
 
 - **Read first:**
   - `docs/competition-notes.md`: prizes, deadlines, eligibility (our notes of 2026-09-29).
